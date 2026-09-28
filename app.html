@@ -32,12 +32,7 @@
             position: relative;
         }
 
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-            color: var(--text-dim);
-        }
+        .header-top { display: flex; justify-content: space-between; padding: 20px; color: var(--text-dim); }
 
         .profile-section { text-align: center; padding: 10px 20px; }
         .profile-pic-wrapper {
@@ -48,15 +43,6 @@
         .profile-name { background: transparent; border: none; color: var(--text-light); font-size: 24px; font-weight: bold; text-align: center; width: 100%; outline: none; }
         .profile-handle { background: transparent; border: none; color: var(--text-dim); font-size: 14px; text-align: center; width: 100%; outline: none; margin-top: 5px; }
 
-        .stats-row { display: flex; justify-content: space-around; padding: 20px; border-bottom: 1px solid var(--border-color); }
-        .stat-item { text-align: center; font-size: 14px; color: var(--text-dim); }
-        .stat-value { color: var(--neon-green); font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
-        
-        .days-row { display: flex; justify-content: space-between; padding: 20px; overflow-x: auto; }
-        .day-item { text-align: center; color: var(--text-dim); font-size: 12px; padding: 10px; border-radius: 12px; min-width: 40px; }
-        .day-item.active { border: 1px solid var(--neon-green); color: var(--text-light); }
-        .day-item .date { font-size: 16px; font-weight: bold; margin-top: 5px; color: var(--text-light); }
-
         .card-container { padding: 0 20px; display: flex; flex-direction: column; gap: 15px; }
         .custom-card {
             background: var(--bg-card); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; position: relative; overflow: hidden; cursor: pointer;
@@ -66,10 +52,9 @@
         .card-text h4 { margin: 0 0 5px; font-size: 16px; }
         .card-text p { margin: 0; font-size: 12px; color: var(--text-dim); }
 
-        /* قسم الطقس بالرئيسية */
         .weather-card {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            border-radius: 20px; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
         }
         .weather-info h3 { margin: 0; font-size: 32px; }
         .weather-info p { margin: 5px 0 0; font-size: 14px; opacity: 0.8; }
@@ -112,7 +97,6 @@
         .modal-content h3 { color: var(--text-light); }
         .modal-content p { color: var(--neon-green); font-size: 18px; font-weight: bold; }
 
-        /* تفاصيل الطقس الكاملة */
         .weather-detail-item { display: flex; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 15px; }
         .weather-detail-item span:last-child { color: var(--neon-green); font-weight: bold; }
     </style>
@@ -129,7 +113,6 @@
 
     <div class="app-container">
         
-        <!-- قسم الرئيسية -->
         <div id="homeSection">
             <div class="header-top">
                 <span onclick="switchMainTab('weather')" style="cursor: pointer; font-size: 20px;">☁️</span>
@@ -146,7 +129,6 @@
             </div>
 
             <div class="card-container">
-                <!-- بطاقة الطقس المصغرة في الرئيسية -->
                 <div class="weather-card" onclick="switchMainTab('weather')">
                     <div class="weather-info">
                         <h3 id="mainTemp">--°</h3>
@@ -171,14 +153,12 @@
                 </div>
             </div>
 
-            <!-- بطاقة المطور -->
             <div class="developer-card">
                 <h4>تصميم وتطوير</h4>
                 <h3>إبراهيم - Rinawi Tech</h3>
             </div>
         </div>
 
-        <!-- قسم الطقس الجديد الكامل -->
         <div id="weatherSection" style="display: none;">
             <div class="section-header">الطقس ☁️ <button class="btn-primary" style="width: auto; padding: 5px 15px; font-size: 12px;" onclick="getWeather()">تحديث</button></div>
             
@@ -301,7 +281,8 @@
             if (savedHandle) document.getElementById("userHandleInput").value = savedHandle;
             if (savedPic) document.getElementById("userProfileImage").src = savedPic;
 
-            getWeather(); // جلب الطقس تلقائياً عند فتح التطبيق
+            // جلب الطقس فوراً عند تشغيل التطبيق
+            getWeather(); 
         };
 
         function saveProfile() {
@@ -321,42 +302,46 @@
             }
         });
 
-        // --- نظام الطقس ---
+        // --- نظام الطقس المعدل لتفادي التعليق ---
         function getWeather() {
+            // 1. تحميل طقس طرابلس فوراً حتى لا تبقى الشاشة فارغة
+            fetchWeatherByCity("طرابلس");
+
+            // 2. محاولة جلب الموقع الحالي بمهلة زمنية قصيرة (5 ثواني كحد أقصى)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => fetchWeatherData(position.coords.latitude, position.coords.longitude),
-                    (error) => fetchWeatherByCity("Tripoli,LB") // طرابلس افتراضياً
+                    (error) => console.log("تم الاعتماد على الموقع الافتراضي"),
+                    { timeout: 5000 } // هذه تمنع التعليق المستمر
                 );
-            } else {
-                fetchWeatherByCity("Tripoli,LB");
             }
         }
 
-        // استخدام واجهة API مجانية للطقس (Open-Meteo) بدون الحاجة لمفاتيح (API Keys)
         function fetchWeatherData(lat, lon) {
             fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m,apparent_temperature,windspeed_10m`)
             .then(res => res.json())
             .then(data => updateWeatherUI(data, "موقعك الحالي"))
-            .catch(e => fetchWeatherByCity("Tripoli,LB"));
+            .catch(e => console.log("استمرار استخدام الموقع الافتراضي"));
         }
 
-        function fetchWeatherByCity(city) {
-            // إحداثيات طرابلس، لبنان (افتراضي)
+        function fetchWeatherByCity(cityName) {
+            // إحداثيات طرابلس، لبنان
             const lat = 34.4367;
             const lon = 35.8362;
             fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m,apparent_temperature,windspeed_10m`)
             .then(res => res.json())
-            .then(data => updateWeatherUI(data, "طرابلس"))
-            .catch(e => console.log("خطأ في جلب الطقس"));
+            .then(data => updateWeatherUI(data, cityName))
+            .catch(e => {
+                document.getElementById("mainCity").innerText = "تعذر الاتصال بالإنترنت";
+            });
         }
 
         function updateWeatherUI(data, cityName) {
+            if(!data || !data.current_weather) return;
             const temp = Math.round(data.current_weather.temperature);
             const wind = data.current_weather.windspeed;
             const code = data.current_weather.weathercode;
             
-            // تحديد الأيقونة والحالة بناءً على كود الطقس
             let icon = "☁️"; let cond = "غائم";
             if(code === 0) { icon = "☀️"; cond = "صافي"; }
             else if(code > 0 && code <= 3) { icon = "⛅"; cond = "غائم جزئياً"; }
@@ -364,21 +349,20 @@
             else if(code >= 71 && code <= 77) { icon = "❄️"; cond = "مثلج"; }
             else if(code >= 95) { icon = "⛈️"; cond = "عواصف رعدية"; }
 
-            // التحديث في الصفحة الرئيسية
             document.getElementById("mainTemp").innerText = temp + "°";
             document.getElementById("mainCity").innerText = cond + " في " + cityName;
             document.getElementById("mainWeatherIcon").innerText = icon;
 
-            // التحديث في قسم الطقس الكامل
             document.getElementById("fullTemp").innerText = temp + "°C";
             document.getElementById("fullCity").innerText = cityName;
             document.getElementById("fullCondition").innerText = cond;
             document.getElementById("fullWeatherIcon").innerText = icon;
 
-            // تحديث التفاصيل
             document.getElementById("wWind").innerText = wind + " km/h";
-            document.getElementById("wHumidity").innerText = data.hourly.relativehumidity_2m[0] + "%";
-            document.getElementById("wFeels").innerText = Math.round(data.hourly.apparent_temperature[0]) + "°C";
+            if(data.hourly && data.hourly.relativehumidity_2m) {
+                document.getElementById("wHumidity").innerText = data.hourly.relativehumidity_2m[0] + "%";
+                document.getElementById("wFeels").innerText = Math.round(data.hourly.apparent_temperature[0]) + "°C";
+            }
         }
 
 
@@ -388,10 +372,10 @@
             document.getElementById('adhkarSection').style.display = tab === 'adhkar' ? 'block' : 'none';
             document.getElementById('remindersSection').style.display = tab === 'reminders' ? 'block' : 'none';
             document.getElementById('gamesSection').style.display = tab === 'games' ? 'block' : 'none';
-            document.getElementById('weatherSection').style.display = tab === 'weather' ? 'block' : 'none'; // تبويب الطقس المخفي
+            document.getElementById('weatherSection').style.display = tab === 'weather' ? 'block' : 'none'; 
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(tab === 'home' || tab === 'weather') document.getElementById('navHome').classList.add('active'); // إبقاء زر الرئيسية مضاءً إذا فتحنا الطقس
+            if(tab === 'home' || tab === 'weather') document.getElementById('navHome').classList.add('active'); 
             if(tab === 'prayer') document.getElementById('navPrayer').classList.add('active');
             if(tab === 'adhkar') document.getElementById('navAdhkar').classList.add('active');
             if(tab === 'reminders') document.getElementById('navReminders').classList.add('active');
